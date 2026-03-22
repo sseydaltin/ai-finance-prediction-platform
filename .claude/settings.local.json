@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/data/raw\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/data/processed\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/notebooks\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/src\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/dashboard\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/models_saved\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/reports/ara_raporlar\" && mkdir -p \"C:/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/kripto-tahmin-platformu/reports/sonuc_raporu\" && echo \"Klasörler oluşturuldu.\")",
+      "Bash(ruff check:*)",
+      "Bash(pytest:*)",
+      "Bash(/c/Users/TUF/Desktop/veri_madenciligi_proje_kodlari/.venv1/Scripts/python.exe -m pytest tests/ -v 2>&1)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+﻿
+.venv/
+.venv1/
+__pycache__/
+*.pyc
+*.pkl
+*.h5
+data/raw/*.csv
+data/processed/*.csv
+models_saved/
+.idea/
+.ipynb_checkpoints/
+.DS_Store
