@@ -193,7 +193,7 @@ def prepare_all_coins(df_raw: pd.DataFrame) -> pd.DataFrame:
 
     combined = pd.concat(frames, ignore_index=True)
 
-    print(f"\n[prepare_all_coins] Tamamlandi")
+    print("\n[prepare_all_coins] Tamamlandi")
     print(f"  Basarili coin : {len(frames)}")
     print(f"  Atlanan coin  : {len(skipped)}{' -> ' + str(skipped) if skipped else ''}")
     print(f"  Toplam satir  : {len(combined):,}")
