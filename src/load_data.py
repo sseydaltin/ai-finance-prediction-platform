@@ -2,82 +2,69 @@ from pathlib import Path
 
 import pandas as pd
 
-RAW_DIR = Path("data/raw")
-PROCESSED_DIR = Path("data/processed")
+# Proje kök dizini: src/ klasörünün bir üstü
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
-# Projede kullanılacak coinler – ekip buradan değiştirebilir
-COINS = ["BTC", "ETH", "LTC", "XRP"]
 
-
-def load_raw(filename: str = "crypto_prices.csv") -> pd.DataFrame:
+def load_raw(filename: str = None) -> pd.DataFrame:
     """
-    data/raw/ klasöründeki ham Kaggle CSV dosyasını okur.
+    data/raw/crypto_prices.csv dosyasını okur.
     Beklenen sütunlar: ticker, date, open, high, low, close
-    - date sütununu datetime formatına çevir
-    - Tarihe göre sırala
-    - Okunan satır sayısını ve benzersiz ticker sayısını yazdır
     """
-    # TODO: pd.read_csv ile dosyayı oku
-    # TODO: date sütununu pd.to_datetime ile dönüştür
-    # TODO: date sütununa göre sort_values uygula
-    # TODO: satır sayısı ve ticker sayısını print ile yazdır
-    pass
+    path = Path(filename) if filename else RAW_DIR / "crypto_prices.csv"
+    df = pd.read_csv(path)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.sort_values("date").reset_index(drop=True)
+    print(f"{len(df)} satır, {df['ticker'].nunique()} ticker yüklendi")
+    return df
+
+
+def get_all_tickers(df: pd.DataFrame) -> list:
+    """Tüm benzersiz ticker'ları alfabetik sırada döndürür."""
+    return sorted(df["ticker"].unique().tolist())
 
 
 def filter_coin(df: pd.DataFrame, ticker: str) -> pd.DataFrame:
     """
-    Ham DataFrame'den belirtilen ticker satırlarını filtreler.
-    - ticker sütununa göre filtrele
-    - date sütununu index olarak ayarla
-    - Bulunan satır sayısını ve tarih aralığını yazdır
+    Ham DataFrame'den tek bir coinin verilerini filtreler.
+    date sütununu index yapar, ticker sütununu düşürür.
     """
-    # TODO: df[df["ticker"] == ticker] ile filtrele
-    # TODO: set_index("date") uygula
-    # TODO: satır sayısı ve min/max tarihi yazdır
-    pass
+    coin_df = df[df["ticker"] == ticker].copy()
+    coin_df = coin_df.set_index("date")
+    coin_df = coin_df.drop(columns=["ticker"])
+    return coin_df
 
 
-def check_coins(df: pd.DataFrame) -> None:
+def check_data_quality(df: pd.DataFrame, min_rows: int = 365) -> pd.DataFrame:
     """
-    COINS listesindeki her coin için:
-    - Kaç satır var
-    - Başlangıç ve bitiş tarihi nedir
-    - 1000 satırdan az varsa uyarı ver
+    Her coin için satır sayısını kontrol eder.
+    min_rows'dan az verisi olan coinleri filtreler.
     """
-    # TODO: COINS üzerinde döngü kur
-    # TODO: her coin için satır sayısı ve tarih aralığı hesapla
-    # TODO: 1000 altındaysa "UYARI: yetersiz veri" yazdır
-    pass
+    counts = df.groupby("ticker").size()
+    valid_tickers = counts[counts >= min_rows].index.tolist()
+    filtered = df[df["ticker"].isin(valid_tickers)].copy()
+    removed = len(counts) - len(valid_tickers)
+    if removed > 0:
+        print(f"UYARI: {removed} coin yetersiz veri nedeniyle elendi (< {min_rows} satır)")
+    print(f"Kalite kontrolü geçti: {len(valid_tickers)} coin, {len(filtered)} satır")
+    return filtered
 
 
-def split_and_save(df: pd.DataFrame) -> None:
+def load_filtered(
+    filename: str = None, min_rows: int = 365
+) -> pd.DataFrame:
     """
-    COINS listesindeki her coin için filter_coin() çağırır ve
-    data/processed/{ticker}.csv olarak kaydeder.
+    Ana giriş noktası. load_raw() + check_data_quality() birleşimi.
+    Temizlenmiş, sıralanmış, kalite kontrollü DataFrame döndürür.
     """
-    # TODO: COINS üzerinde döngü kur
-    # TODO: her coin için filter_coin() çağır
-    # TODO: to_csv ile data/processed/{ticker}.csv kaydet
-    # TODO: kayıt sonrası onay mesajı yazdır
-    pass
-
-
-def load_processed(ticker: str) -> pd.DataFrame:
-    """
-    data/processed/{ticker}.csv dosyasını okur ve döndürür.
-    Dosya bulunamazsa anlaşılır hata mesajı ver.
-    """
-    # TODO: dosya yolunu oluştur
-    # TODO: dosya yoksa FileNotFoundError ile açıklayıcı mesaj ver
-    # TODO: pd.read_csv ile oku, date sütununu index yap
-    pass
+    df = load_raw(filename)
+    df = check_data_quality(df, min_rows)
+    return df
 
 
 if __name__ == "__main__":
-    # Bu dosya doğrudan çalıştırıldığında:
-    # 1. Ham veriyi yükle
-    # 2. Coin kontrolü yap
-    # 3. Coin CSV'lerini oluştur
-    df = load_raw()
-    check_coins(df)
-    split_and_save(df)
+    df = load_filtered()
+    tickers = get_all_tickers(df)
+    print(f"{len(tickers)} ticker yüklendi, {len(df)} satır")
