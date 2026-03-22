@@ -2,7 +2,7 @@ ruff==0.4.1
 pytest==8.0.2
 pandas>=2.2.0
 numpy==1.26.4
-pandas-ta==0.3.14b
+pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development
 scikit-learn==1.4.1
 xgboost==2.0.3
 lightgbm==4.3.0
