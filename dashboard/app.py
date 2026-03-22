@@ -11,7 +11,8 @@ from src.evaluate import classification_metrics, regression_metrics
 
 st.set_page_config(page_title="Kripto Tahmin Platformu", layout="wide")
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
+# ── Sidebar ─────────────────────────────────────────────────────────────────
+# ─
 # TODO: st.sidebar.title ile başlık ekle
 # TODO: st.sidebar.selectbox ile coin seçimi (COINS listesinden)
 # TODO: st.sidebar.radio ile görev seçimi: "Sınıflandırma" / "Regresyon"
