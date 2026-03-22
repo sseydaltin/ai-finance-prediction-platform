@@ -1,73 +1,64 @@
 import pandas as pd
 
+from src.indicators import add_all_indicators
+from src.load_data import filter_coin, get_all_tickers
+
 
 def add_lag_features(df: pd.DataFrame,
-                     lags: list = [1, 2, 3, 5, 7]) -> pd.DataFrame:
-    """
-    close fiyatı için gecikme (lag) değişkenleri ekler.
-    - Her lag için df["close"].shift(lag) kullan
-    - Sütun adları: close_lag_1, close_lag_2, close_lag_3, ...
-    """
-    # TODO: lags listesi üzerinde döngü kur
-    # TODO: df["close"].shift(lag) ile gecikme sütunu oluştur
-    # TODO: f"close_lag_{lag}" adıyla df'e ekle
-    # TODO: güncellenmiş df'i döndür
-    pass
+                     lags: list = None) -> pd.DataFrame:
+    if lags is None:
+        lags = [1, 2, 3, 5, 7]
+    df = df.copy()
+    for lag in lags:
+        df[f"close_lag_{lag}"] = df["close"].shift(lag)
+    return df
 
 
 def add_rolling_features(df: pd.DataFrame,
-                         windows: list = [5, 10, 20]) -> pd.DataFrame:
-    """
-    Rolling ortalama ve rolling standart sapma ekler.
-    - Her pencere için close üzerinden hesapla
-    - Sütun adları: rolling_mean_5, rolling_std_5, ...
-    """
-    # TODO: windows listesi üzerinde döngü kur
-    # TODO: df["close"].rolling(w).mean() → rolling_mean_{w}
-    # TODO: df["close"].rolling(w).std()  → rolling_std_{w}
-    # TODO: güncellenmiş df'i döndür
-    pass
+                         windows: list = None) -> pd.DataFrame:
+    if windows is None:
+        windows = [5, 10]
+    df = df.copy()
+    for w in windows:
+        df[f"rolling_mean_{w}"] = df["close"].rolling(w).mean()
+        df[f"rolling_std_{w}"] = df["close"].rolling(w).std()
+    return df
 
 
 def add_price_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    OHLC'den türetilen 4 ek öznitelik ekler:
-    - daily_range  : high - low
-    - body_size    : abs(close - open)
-    - upper_shadow : high - max(open, close)
-    - lower_shadow : min(open, close) - low
-    """
-    # TODO: daily_range = df["high"] - df["low"]
-    # TODO: body_size = abs(df["close"] - df["open"])
-    # TODO: upper_shadow = df["high"] - df[["open","close"]].max(axis=1)
-    # TODO: lower_shadow = df[["open","close"]].min(axis=1) - df["low"]
-    # TODO: dört sütunu df'e ekle ve döndür
-    pass
+    df = df.copy()
+    df["daily_range"] = df["high"] - df["low"]
+    df["body_size"] = (df["close"] - df["open"]).abs()
+    df["upper_shadow"] = df["high"] - df[["open", "close"]].max(axis=1)
+    df["lower_shadow"] = df[["open", "close"]].min(axis=1) - df["low"]
+    return df
 
 
 def add_target_variables(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    İki hedef değişken ekler:
-    - direction   : int (0/1) – ertesi gün close bugünden yüksekse 1
-    - daily_return: float (%) – (close_t / close_t-1 - 1) * 100
-    UYARI: Bu sütunlar modele feature olarak verilmez!
-    """
-    # TODO: daily_return = close.pct_change() * 100
-    # TODO: direction = (close.shift(-1) > close).astype(int)
-    # TODO: son satır NaN olacak, dropna sonraya bırakılıyor
-    # TODO: iki sütunu df'e ekle ve döndür
-    pass
+    df = df.copy()
+    df["daily_return"] = df["close"].pct_change() * 100
+    df["direction"] = (df["close"].shift(-1) > df["close"]).astype(int)
+    # Son satırda direction NaN olur – prepare_features() sonunda dropna() temizler
+    df.loc[df.index[-1], "direction"] = pd.NA
+    return df
 
 
 def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Tüm adımları pipeline gibi sırayla çalıştırır:
-    add_all_indicators → add_lag_features → add_rolling_features
-    → add_price_features → add_target_variables → dropna
-    Hazır DataFrame döndürür, sütun sayısını yazdırır.
-    """
-    # TODO: her fonksiyonu sırayla çağır
-    # TODO: en sonda df.dropna() uygula
-    # TODO: final shape ve sütun listesini yazdır
-    # TODO: temizlenmiş df'i döndür
-    pass
+    df = add_all_indicators(df)
+    df = add_lag_features(df)
+    df = add_rolling_features(df)
+    df = add_price_features(df)
+    df = add_target_variables(df)
+    df = df.dropna()
+    return df
+
+
+def prepare_all_coins(df_raw: pd.DataFrame) -> pd.DataFrame:
+    tickers = get_all_tickers(df_raw)
+    results = []
+    for ticker in tickers:
+        coin_df = filter_coin(df_raw, ticker)
+        features = prepare_features(coin_df)
+        features["ticker"] = ticker
+        results.append(features)
+    return pd.concat(results)
