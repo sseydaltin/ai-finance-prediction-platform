@@ -1,13 +1,10 @@
-import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
-import joblib
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import streamlit as st
+
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.load_data import COINS, load_processed
-from src.evaluate import classification_metrics, regression_metrics
 
 st.set_page_config(page_title="Kripto Tahmin Platformu", layout="wide")
 

@@ -1,5 +1,4 @@
 import pandas as pd
-import pandas_ta as ta
 
 # NOT: Veri setinde volume sütunu YOKTUR.
 # Sadece OHLC bazlı indikatörler kullanılacak.
