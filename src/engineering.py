@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from src.indicators import add_all_indicators
@@ -37,9 +38,9 @@ def add_price_features(df: pd.DataFrame) -> pd.DataFrame:
 def add_target_variables(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["daily_return"] = df["close"].pct_change() * 100
-    df["direction"] = (df["close"].shift(-1) > df["close"]).astype(int)
+    df["direction"] = (df["close"].shift(-1) > df["close"]).astype(float)
     # Son satırda direction NaN olur – prepare_features() sonunda dropna() temizler
-    df.loc[df.index[-1], "direction"] = pd.NA
+    df.loc[df.index[-1], "direction"] = np.nan
     return df
 
 
@@ -50,15 +51,25 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     df = add_price_features(df)
     df = add_target_variables(df)
     df = df.dropna()
+    df = df.reset_index()   # date index → sütun (EXCLUDE_COLS ile dışlanabilir)
     return df
 
 
 def prepare_all_coins(df_raw: pd.DataFrame) -> pd.DataFrame:
     tickers = get_all_tickers(df_raw)
     results = []
+    skipped = []
     for ticker in tickers:
-        coin_df = filter_coin(df_raw, ticker)
-        features = prepare_features(coin_df)
-        features["ticker"] = ticker
-        results.append(features)
-    return pd.concat(results)
+        try:
+            coin_df = filter_coin(df_raw, ticker)
+            features = prepare_features(coin_df)
+            features["ticker"] = ticker
+            results.append(features)
+        except Exception as exc:
+            print(f"[prepare_all_coins] UYARI: {ticker} atlandı → {exc}")
+            skipped.append(ticker)
+    if not results:
+        raise RuntimeError("Hiçbir coin başarıyla işlenmedi.")
+    if skipped:
+        print(f"[prepare_all_coins] Atlanan coinler ({len(skipped)}): {skipped}")
+    return pd.concat(results, ignore_index=True)

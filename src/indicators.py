@@ -14,20 +14,21 @@ def add_rsi(df: pd.DataFrame, period: int = 14) -> pd.DataFrame:
 def add_macd(df: pd.DataFrame, fast: int = 12,
              slow: int = 26, signal: int = 9) -> pd.DataFrame:
     df = df.copy()
-    macd_df = ta.macd(df["close"], fast=fast, slow=slow, signal=signal)
-    df["macd"] = macd_df.iloc[:, 0]
-    df["macd_hist"] = macd_df.iloc[:, 1]
-    df["macd_signal"] = macd_df.iloc[:, 2]
+    raw = ta.macd(df["close"], fast=fast, slow=slow, signal=signal)
+    df["macd"] = raw[f"MACD_{fast}_{slow}_{signal}"]
+    df["macd_hist"] = raw[f"MACDh_{fast}_{slow}_{signal}"]
+    df["macd_signal"] = raw[f"MACDs_{fast}_{slow}_{signal}"]
     return df
 
 
 def add_bollinger_bands(df: pd.DataFrame, period: int = 20,
                         std: float = 2.0) -> pd.DataFrame:
     df = df.copy()
-    bb = ta.bbands(df["close"], length=period, std=std)
-    df["bb_lower"] = bb.iloc[:, 0]
-    df["bb_mid"] = bb.iloc[:, 1]
-    df["bb_upper"] = bb.iloc[:, 2]
+    raw = ta.bbands(df["close"], length=period, std=std)
+    suffix = f"{period}_{std}_{std}"
+    df["bb_lower"] = raw[f"BBL_{suffix}"]
+    df["bb_mid"] = raw[f"BBM_{suffix}"]
+    df["bb_upper"] = raw[f"BBU_{suffix}"]
     return df
 
 
