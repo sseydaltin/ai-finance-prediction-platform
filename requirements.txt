@@ -1,6 +1,7 @@
 pandas>=2.2.0
 numpy>=1.26.0
-pandas-ta>=0.3.14b0
+pandas-ta>=0.4.71b0 --no-deps
+numba==0.61.2
 scikit-learn>=1.4.0
 xgboost>=2.0.0
 lightgbm>=4.3.0
