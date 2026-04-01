@@ -64,7 +64,23 @@ def load_filtered(
     return df
 
 
+def save_processed_coins(df: pd.DataFrame) -> None:
+    """
+    Filtrelenmiş coin verilerini data/processed klasörüne ayrı ayrı kaydeder.
+    """
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+
+    tickers = get_all_tickers(df)
+
+    for ticker in tickers:
+        coin_df = filter_coin(df, ticker)
+        output_path = PROCESSED_DIR / f"{ticker}.csv"
+        coin_df.to_csv(output_path)
+        print(f"Kaydedildi: {output_path}")
+
+
 if __name__ == "__main__":
     df = load_filtered()
     tickers = get_all_tickers(df)
     print(f"{len(tickers)} ticker yüklendi, {len(df)} satır")
+    save_processed_coins(df)

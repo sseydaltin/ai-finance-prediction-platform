@@ -14,8 +14,7 @@ def get_feature_columns(df: pd.DataFrame) -> list:
     EXCLUDE_COLS dışındaki tüm sütunları döndürür.
     Bunlar modele girecek feature sütunlarıdır.
     """
-    # TODO: [col for col in df.columns if col not in EXCLUDE_COLS]
-    pass
+    return [col for col in df.columns if col not in EXCLUDE_COLS]
 
 
 def temporal_train_test_split(df: pd.DataFrame, test_ratio: float = 0.2):
